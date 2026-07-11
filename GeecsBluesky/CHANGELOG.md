@@ -4,6 +4,36 @@ All notable changes to `geecs-bluesky` are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.13.2] - 2026-06-26
+
+### Changed
+
+- External asset Resource documents now use the configured device-server data
+  root as their canonical `root` when available, with POSIX `resource_path`
+  values below that root, instead of always using the scan folder as root.
+- Resource path construction now normalizes Windows and POSIX separators before
+  computing relative paths.
+
+### Documentation
+
+- Updated the external-assets roadmap to describe canonical Resource writing,
+  reader-side root mapping, and the pre-production/test status of current Tiled
+  data.
+
+## [0.13.1] - 2026-06-25
+
+### Fixed
+
+- Tiled-backed local camera readback now maps Windows/device-server data roots
+  such as `Z:/data` to local data mounts such as `/Volumes/hdna2/data` before
+  constructing Resource/Datum documents, avoiding OS-dependent
+  `Path.relative_to` failures.
+
+### Documentation
+
+- Added the external-assets roadmap/status document with the current
+  acquisition, local-fill, root-mapping, and post-run-analysis next steps.
+
 ## [0.13.0] - 2026-06-24
 
 ### Changed
@@ -16,6 +46,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - The standalone hardware smoke harness now runs no-shot-control scenarios in
   explicit `free_run_time_sync` mode and uses true ARMED strict mode for
   shot-control/full-output checks.
+
 ### Added
 
 - Added Tiled-backed local camera asset readback helpers. Archived Bluesky runs
