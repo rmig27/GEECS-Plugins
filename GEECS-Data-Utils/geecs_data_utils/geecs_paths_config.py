@@ -42,7 +42,10 @@ class GeecsPathsConfig:
 
     def __init__(
         self,
-        config_path: Path = Path("~/.config/geecs_python_api/config.ini").expanduser(),
+        # config_path: Path = Path("~/.config/geecs_python_api/config.ini").expanduser(),
+        config_path: Path = Path(
+            r"C:\Users\loasis.LOASIS\Desktop\Scripts\People\Rachel\git_repos\config_launcher\config.ini"
+        ),
         default_experiment: Optional[str] = None,
         set_base_path: Optional[Union[Path, str]] = None,
         image_analysis_configs_path: Optional[Union[Path, str]] = None,

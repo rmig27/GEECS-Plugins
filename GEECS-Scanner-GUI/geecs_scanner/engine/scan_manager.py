@@ -1041,7 +1041,7 @@ class ScanManager:
             scan_data_manager=self.scan_data_manager,
             data_logger=self.data_logger,
         )
-
+        # logger.INFO(f'loaded optimizer config: {self.optimizer}')
         self.device_manager.load_from_dictionary(self.optimizer.device_requirements)
 
         from collections import defaultdict

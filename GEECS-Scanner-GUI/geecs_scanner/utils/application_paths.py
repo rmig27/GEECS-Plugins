@@ -9,7 +9,10 @@ from geecs_data_utils.config_base import ConfigDirManager
 
 logger = logging.getLogger(__name__)
 
-CONFIG_PATH = Path("~/.config/geecs_python_api/config.ini").expanduser()
+# CONFIG_PATH = Path("~/.config/geecs_python_api/config.ini").expanduser()
+CONFIG_PATH = Path(
+    r"C:\\Users\\loasis.LOASIS\\Desktop\\Scripts\\People\\Rachel\\git_repos\\config_launcher\\config.ini"
+)
 DEFAULT_BASE_PATH = Path(__file__).parents[2] / "scanner_configs" / "experiments"
 
 

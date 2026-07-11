@@ -44,7 +44,7 @@ def find_user_data_directory_relative(
 
 def load_config() -> Optional[configparser.ConfigParser]:
     """Load ~.config.geecs_python_api.config.ini if present and return a ConfigParser, else None."""
-    config_path = os.path.expanduser("~/.config/geecs_python_api/config.ini")
+    config_path = r"C:\\Users\\loasis.LOASIS\\Desktop\\Scripts\\People\\Rachel\\git_repos\\config_launcher\\config.ini"
     if os.path.exists(config_path):
         config = configparser.ConfigParser()
         config.read(config_path)

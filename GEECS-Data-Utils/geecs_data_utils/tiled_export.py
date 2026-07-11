@@ -51,7 +51,8 @@ def _read_tiled_config() -> tuple[Optional[str], Optional[str]]:
     Returns ``(uri, api_key)``, either of which may be ``None`` if absent.  Same
     config source ``BlueskyScanner`` uses to subscribe its ``TiledWriter``.
     """
-    config_path = Path.home() / ".config" / "geecs_python_api" / "config.ini"
+    # config_path = Path.home() / ".config" / "geecs_python_api" / "config.ini"
+    config_path = r"C:\\Users\\loasis.LOASIS\\Desktop\\Scripts\\People\\Rachel\\git_repos\\config_launcher\\config.ini"
     if not config_path.exists():
         return None, None
     cfg = configparser.ConfigParser()
@@ -194,7 +195,8 @@ def write_scalar_files_from_tiled(
     if not tiled_uri:
         raise RuntimeError(
             "No Tiled URI given and none found in "
-            "~/.config/geecs_python_api/config.ini [tiled]"
+            # "~/.config/geecs_python_api/config.ini [tiled]"
+            r"C:\\Users\\loasis.LOASIS\\Desktop\\Scripts\\People\\Rachel\\git_repos\\config_launcher\\config.ini"
         )
 
     start_doc, primary_df = _fetch_run(uid, tiled_uri, tiled_api_key)

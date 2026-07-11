@@ -19,7 +19,8 @@ logger = logging.getLogger(__name__)
 
 def _resolve_image_from_ini() -> Path | None:
     """Resolve image analysis config dir from ~/.config/geecs_python_api/config.ini."""
-    config_path = Path("~/.config/geecs_python_api/config.ini").expanduser()
+    # config_path = Path("~/.config/geecs_python_api/config.ini").expanduser()
+    config_path: Path = r"C:\\Users\\loasis.LOASIS\\Desktop\\Scripts\\People\\Rachel\\git_repos\\config_launcher\\config.ini"
     if not config_path.exists():
         return None
 
