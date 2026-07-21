@@ -34,6 +34,8 @@ if TYPE_CHECKING:
     LengthQuantity = NewType('LengthQuantity', Quantity) # [length]
     DensityQuantity = NewType('DensityQuantity', Quantity) # [length]**-3
 
+import abel
+
 from collections import namedtuple
 SpatialFrequencyCoordinates = namedtuple('SpatialFrequencyCoordinates', ['nu_x', 'nu_y'])
 
@@ -685,11 +687,7 @@ class QWLSIImageAnalyzer:
         """
         if image_resolution is None:
             image_resolution = self.CAMERA_RESOLUTION
-
-        # Imported lazily so importing qwlsi.py, and the wavefront paths that
-        # don't need an Abel transform, stay clean when PyAbel is unavailable.
-        import abel
-
+        
         # unit-aware version of abel.Transform()
         @ureg.wraps('nm/pixel', 'nm')
         def abel_transform_ua(wavefront):

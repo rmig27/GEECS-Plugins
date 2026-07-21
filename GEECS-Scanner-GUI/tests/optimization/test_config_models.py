@@ -27,15 +27,11 @@ from geecs_scanner.optimization.config_models import (
 _BEAM_PATH = "image_analysis.analyzers.beam_analyzer.BeamAnalyzer"
 
 
-def _camera_image():
-    """Return a minimal CameraConfig for embedding in fake diagnostics.
-
-    The device identity lives on ``DiagnosticAnalysisConfig.name``; ``CameraConfig``
-    no longer carries a ``name`` field, so a default instance is all that is needed.
-    """
+def _camera_image(name: str):
+    """Return a minimal CameraConfig for embedding in fake diagnostics."""
     from image_analysis.config import CameraConfig
 
-    return CameraConfig()
+    return CameraConfig(name=name)
 
 
 def _diag(*, name: str, scan: dict | None = None):
@@ -51,7 +47,7 @@ def _diag(*, name: str, scan: dict | None = None):
         {
             "name": name,
             "image_analyzer": {"class_path": _BEAM_PATH, "kwargs": {}},
-            "image": _camera_image(),
+            "image": _camera_image(name),
             "scan": scan or {},
         }
     )

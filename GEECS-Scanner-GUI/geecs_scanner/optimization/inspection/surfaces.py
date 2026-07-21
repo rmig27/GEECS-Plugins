@@ -14,8 +14,6 @@ import numpy as np
 import torch
 from xopt.vocs import VOCS
 
-from geecs_scanner.optimization.vocs_utils import variable_bounds
-
 
 def evaluate_model_on_grid(
     model,
@@ -52,10 +50,9 @@ def evaluate_model_on_grid(
     reference_point = dict(reference_point or {})
     objective_name = objective_name or vocs.objective_names[0]
 
-    bounds = variable_bounds(vocs)
     vx, vy = var_names
-    x = np.linspace(*bounds[vx], n_grid)
-    y = np.linspace(*bounds[vy], n_grid)
+    x = np.linspace(*vocs.variables[vx], n_grid)
+    y = np.linspace(*vocs.variables[vy], n_grid)
     Xg, Yg = np.meshgrid(x, y)
 
     input_names = vocs.variable_names
@@ -66,7 +63,7 @@ def evaluate_model_on_grid(
         pt[vy] = yi
         for name in input_names:
             if name not in pt:
-                lo, hi = bounds[name]
+                lo, hi = vocs.variables[name]
                 pt[name] = 0.5 * (lo + hi)
         rows.append([pt[name] for name in input_names])
 
@@ -103,10 +100,9 @@ def acquisition_surface(
     Same slicing semantics as :func:`evaluate_model_on_grid`.
     """
     reference_point = dict(reference_point or {})
-    bounds = variable_bounds(vocs)
     vx, vy = var_names
-    x = np.linspace(*bounds[vx], n_grid)
-    y = np.linspace(*bounds[vy], n_grid)
+    x = np.linspace(*vocs.variables[vx], n_grid)
+    y = np.linspace(*vocs.variables[vy], n_grid)
     Xg, Yg = np.meshgrid(x, y)
 
     input_names = vocs.variable_names
@@ -117,7 +113,7 @@ def acquisition_surface(
         pt[vy] = yi
         for name in input_names:
             if name not in pt:
-                lo, hi = bounds[name]
+                lo, hi = vocs.variables[name]
                 pt[name] = 0.5 * (lo + hi)
         rows.append([pt[name] for name in input_names])
     X_tensor = torch.tensor(rows, dtype=torch.double)
