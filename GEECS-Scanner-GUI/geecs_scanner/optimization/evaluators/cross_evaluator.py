@@ -1,3 +1,11 @@
+"""Minimize custom objective function for symmetric cross.
+
+Classes
+-------
+SymmetricCrossEvaluator
+    Custom objective function to minimize.
+"""
+
 from __future__ import annotations
 import numpy as np
 from geecs_scanner.optimization.base_evaluator import BaseEvaluator
@@ -8,40 +16,53 @@ class SymmetricCrossEvaluator(BaseEvaluator):
     Optimizes for a high-intensity, symmetric cross shape on a diagnostic camera.
 
     Minimizes function:
-    Objective = -TotalCounts + (Symmetry_Weight * |Width_X - Width_Y|)
+    Objective = below.
     """
 
+    def __init__(self, calibration: float = 24.4e-3, **kwargs):
+        super().__init__(**kwargs)
+        self.calibration = calibration
+
     def compute_objective(self, scalars, bin_number):
+        """Objective to minimize."""
         dev = self.primary_device
-        counts_key = f"{dev}_image_total"
+        x_cross = scalars[f"{dev}_x_peak_location"]
+        y_cross = scalars[f"{dev}_y_peak_location"]
 
-        total_counts = scalars[counts_key]
+        x_img = scalars[f"{dev}_image_peak_img_x"]
+        y_img = scalars[f"{dev}_image_peak_img_y"]
 
-        width_x = scalars.get(f"{dev}_x_fwhm")
-        width_y = scalars.get(f"{dev}_y_fwhm")
+        xslice_max = scalars[f"{dev}_x_slicemax"]
+        yslice_max = scalars[f"{dev}_y_slicemax"]
 
-        asymmetry = abs(width_x - width_y)
+        x_intensity_term = scalars[f"{dev}_x_invintensity"]
+        y_intensity_term = scalars[f"{dev}_y_invintensity"]
 
-        # Since Xopt minimizes, make total_counts negative
-        # Leave asymmetry positive (drives the difference down)
-        symmetry_weight = 1000.0
+        image_total = scalars[f"{self.primary_device}_image_total"]
 
-        objective_value = -total_counts + (symmetry_weight * asymmetry)
-        return float(objective_value)
+        objective = np.sqrt(
+            ((x_img - x_cross) ** 2)
+            + ((y_img - y_cross) ** 2)
+            + (15 * (xslice_max - yslice_max) ** 2)
+            + 25 * (x_intensity_term**2)
+            + 25 * (y_intensity_term**2)
+            + (25 * ((1 / x_intensity_term) - (1 / y_intensity_term)) ** 2)
+            + ((1.0 / image_total) ** 2)
+        )
+
+        return objective
 
     def compute_observables(self, scalars, bin_number):
+        """Expose pixel + calibrated FWHMs alongside the objective."""
         dev = self.primary_device
-
-        width_x = scalars.get(f"{dev}_x_fwhm", float("nan"))
-        width_y = scalars.get(f"{dev}_y_fwhm", float("nan"))
-
         return {
-            "image_total": scalars.get(f"{dev}_image_total", 0.0),
-            "x_spread": width_x,
-            "y_spread": width_y,
-            "asymmetry_delta": abs(width_x - width_y)
-            if not np.isnan(width_x)
-            else float("nan"),
-            "x_CoM": scalars.get(f"{dev}_x_CoM", float("nan")),
-            "y_CoM": scalars.get(f"{dev}_y_CoM", float("nan")),
+            "x_cross": scalars[f"{dev}_x_peak_location"],
+            "y_cross": scalars[f"{dev}_y_peak_location"],
+            "x_img": scalars[f"{dev}_image_peak_img_x"],
+            "y_img": scalars[f"{dev}_image_peak_img_y"],
+            "xslice_max": scalars[f"{dev}_x_slicemax"],
+            "yslice_max": scalars[f"{dev}_y_slicemax"],
+            "x_intensity_term": scalars[f"{dev}_x_invintensity"],
+            "y_intensity_term": scalars[f"{dev}_y_invintensity"],
+            "image_total": scalars[f"{self.primary_device}_image_total"],
         }

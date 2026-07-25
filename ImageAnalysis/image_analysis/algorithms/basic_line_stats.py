@@ -95,6 +95,46 @@ def compute_peak_location(profile: np.ndarray) -> float:
     return float(np.argmax(profile))
 
 
+# ============================================================================
+# ADDED BY RACHEL
+# ============================================================================
+
+
+def compute_slice_max(profile: np.ndarray) -> float:
+    """Compute max intensity in slice."""
+    profile = np.asarray(profile, dtype=float)
+    if profile.size == 0:
+        logger.warning(
+            "compute_slice_max: Profile is empty or peak_loc is NaN. Returning np.nan."
+        )
+        return np.nan
+
+    size = len(profile)
+    peak_loc = np.argmax(profile)
+    # CLAMP BOUNDS TO PREVENT NEGATIVE INDEXING (GEMINI)
+    slice_start = max(0, int(peak_loc - 50))
+    slice_end = min(size, int(peak_loc + 50))
+
+    slice_1d = profile[slice_start:slice_end]
+    if slice_1d.size == 0:
+        print("Array size is zero, return NaN")
+        return np.nan
+
+    return float(np.max(slice_1d))
+
+
+def compute_inverse_intensity(slice_max: float) -> float:
+    """Inverse intensity term calculation."""
+    if np.isnan(slice_max):
+        return np.nan
+    return float(1.0 / (slice_max + 1e-6))
+
+
+# ============================================================================
+
+# ============================================================================
+
+
 class LineBasicStats(BaseModel):
     """Basic statistics of a 1D line profile with optional unit tracking.
 
@@ -147,6 +187,17 @@ class LineBasicStats(BaseModel):
     integrated_intensity: Optional[float] = None
     peak_value: Optional[float] = None
 
+    # ============================================================================
+    # ADDED BY RACHEL
+    # ============================================================================
+
+    slice_max: Optional[float] = None
+    inv_intensity_term: Optional[float] = None
+
+    # ============================================================================
+
+    # ============================================================================
+
     model_config = ConfigDict(
         arbitrary_types_allowed=True,  # Allow numpy arrays
         frozen=False,  # Allow setting computed fields
@@ -177,20 +228,29 @@ class LineBasicStats(BaseModel):
         x = self.line_data[:, 0]
         y = self.line_data[:, 1]
 
-        # Use existing functions from basic_beam_stats (they work on 1D arrays)
-        # These return values in index space
         com_idx = compute_center_of_mass(y)
         rms_idx = compute_rms(y)
         fwhm_idx = compute_fwhm(y)
         peak_idx = compute_peak_location(y)
 
-        # Peak value - use numpy indexing which handles float indices
+        # ============================================================================
+        # ADDED BY RACHEL: Compute scalar intensity values
+        # ============================================================================
+        slice_max_val = compute_slice_max(y)
+        inv_intensity_val = compute_inverse_intensity(slice_max_val)
+
+        # Assign directly to model fields (intensity values don't need x-coordinate mapping)
+        self.slice_max = slice_max_val
+        self.inv_intensity_term = inv_intensity_val
+        # ============================================================================
+
+        # Peak value
         if not np.isnan(peak_idx):
             self.peak_value = y[int(peak_idx)]
         else:
             self.peak_value = np.nan
 
-        # Integrated intensity is the sum of y-values
+        # Integrated intensity
         self.integrated_intensity = y.sum()
 
         # Check if x is index-based (x = [0, 1, 2, ...])
@@ -210,8 +270,6 @@ class LineBasicStats(BaseModel):
                 self.CoM = np.nan
 
             if not np.isnan(rms_idx) and not np.isnan(com_idx):
-                # For RMS and FWHM, we need to scale by dx
-                # Use dx at the CoM location
                 idx = int(np.clip(com_idx, 0, len(x) - 2))
                 dx = x[idx + 1] - x[idx]
                 self.rms = rms_idx * dx
@@ -244,5 +302,12 @@ class LineBasicStats(BaseModel):
             "peak_location",
             "integrated_intensity",
             "peak_value",
+            # ============================================================================
+            # #ADDED BY RACHEL
+            # "slicemax",
+            # "invintensity",
+            "slice_max",
+            "inv_intensity_term",
+            # ============================================================================
         ]
         return {field: getattr(self, field) for field in fields}
